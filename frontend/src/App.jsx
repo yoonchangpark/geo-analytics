@@ -42,15 +42,26 @@ function App() {
     setResults(null);
     setError('');
     setProgress(0);
-    setTimeLeft(120);
+    
+    // 평균 소요 시간 계산 (최근 5회 기준)
+    const pastDurationsStr = localStorage.getItem('geo_past_durations');
+    const pastDurations = pastDurationsStr ? JSON.parse(pastDurationsStr) : [];
+    const avgDuration = pastDurations.length > 0
+      ? Math.floor(pastDurations.reduce((a, b) => a + b, 0) / pastDurations.length)
+      : 120; // fallback default
+    
+    setTimeLeft(avgDuration);
 
     const timer = setInterval(() => {
       setProgress(old => {
-        const next = old + (Math.random() * 1.5 + 0.5);
+        // 평균 기간 기반으로 프로그레스 99%까지 딱 맞게 차오르도록 설정
+        const next = old + (100 / avgDuration);
         return next > 99 ? 99 : next;
       });
       setTimeLeft(old => (old > 0 ? old - 1 : 0));
     }, 1000);
+
+    const startTime = Date.now();
 
     let naverRawData = null;
     
@@ -112,6 +123,13 @@ function App() {
       if (!res.ok) throw new Error(json.error || 'Failed to fetch');
       
       setResults(json.data);
+      
+      // 성공적으로 끝났다면 실제 소요 시간을 기록
+      const durationSec = Math.floor((Date.now() - startTime) / 1000);
+      const newDurations = [...pastDurations, durationSec];
+      if (newDurations.length > 5) newDurations.shift(); // 최근 5개만 유지
+      localStorage.setItem('geo_past_durations', JSON.stringify(newDurations));
+      
     } catch (err) {
       console.error(err);
       setError(err.message);
