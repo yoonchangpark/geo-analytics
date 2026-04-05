@@ -154,6 +154,93 @@ async function findCompetitorUrls(brandName) {
     }
 }
 
+async function takeSnippetScreenshot(url, targetText, brandKey) {
+    if (!url || !targetText || targetText.includes("보안 블라인드")) return null;
+
+    let browser;
+    try {
+        console.log(`[Sniper Screenshot] Targeting on ${brandKey}: "${targetText.substring(0, 30)}..."`);
+        browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1280, height: 1024 });
+
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        await new Promise(r => setTimeout(r, 1500));
+
+        const success = await page.evaluate(async (textToFind) => {
+            const words = textToFind.split(' ').filter(w => w.length > 2);
+            if(words.length === 0) return false;
+            
+            const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, p, span, div, li, td, th'));
+            let targetEl = null;
+
+            for (let el of elements) {
+                if (el.innerText && el.innerText.includes(words[0])) {
+                    let matchCount = 0;
+                    for (let w of words) {
+                        if (el.innerText.includes(w)) matchCount++;
+                    }
+                    if (matchCount / words.length > 0.4) {
+                        targetEl = el;
+                        let children = Array.from(targetEl.children);
+                        while(children.length > 0) {
+                            let foundDeeper = false;
+                            for (let c of children) {
+                                if (c.innerText && c.innerText.includes(words[0])) {
+                                  targetEl = c;
+                                  children = Array.from(targetEl.children);
+                                  foundDeeper = true;
+                                  break;
+                                }
+                            }
+                            if(!foundDeeper) break;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (targetEl) {
+                targetEl.style.border = '6px solid #EF4444'; 
+                targetEl.style.backgroundColor = '#FEF2F2';
+                targetEl.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.8)';
+                targetEl.style.padding = '10px';
+                targetEl.style.borderRadius = '8px';
+                targetEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+                return true;
+            }
+            return false;
+        }, targetText);
+
+        if(!success) {
+            console.log(`[Sniper Screenshot] text not found on page.`);
+            await browser.close();
+            return null;
+        }
+
+        await new Promise(r => setTimeout(r, 800)); // wait for scroll
+        const screenshotDir = path.resolve('public', 'screenshots');
+        if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
+        
+        const safeKey = brandKey ? brandKey.replace(/[^a-zA-Z0-9가-힣]/g, '_') : 'sniper';
+        const filename = `sniper_${safeKey}_${Date.now()}.png`;
+        const screenshotPath = path.join(screenshotDir, filename);
+        
+        await page.screenshot({ path: screenshotPath, fullPage: false });
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+        await browser.close();
+        return `${backendUrl}/screenshots/${filename}`;
+    } catch (e) {
+        if (browser) await browser.close();
+        console.error(`Sniper Screenshot failed:`, e.message);
+        return null;
+    }
+}
+
 export async function generateBenchmarkingReport(keyword, targetUrl, brandName, topCompetitor) {
   // 1. Scraper Node: 자사 URL 소스 획득 시도 (Proxy/Puppeteer 적용)
   const myScrape = await scrapeWithProxyOrPuppeteer(targetUrl, brandName + "_base");
@@ -202,12 +289,14 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
           {
             step_title: "Step 1: AI 전용 '요약 섹션' 삽입",
             description: "웹사이트 본문 상단이나 하단에 AI가 긁어가기 좋게 3줄 요약을 넣어야 합니다.",
-            example: "[현재 문장] (데이터 없음) -> [수정 제안] 1. 특수 멜트블로운 원단 사용 2. 99.9% 살균력 3. 경제적 롤 타입"
+            our_raw_target_sentence: "(데이터 없음)",
+            ai_optimized_sentence: "1. 특수 멜트블로운 원단 사용 2. 99.9% 살균력 3. 경제적 롤 타입"
           },
           {
             step_title: "Step 2: 수치 기반 팩트체크 강화",
             description: "추상적인 수식어 대신 강력한 로우데이터(숫자)를 제시해야 AI가 신뢰합니다.",
-            example: "[현재 문장] 잘 닦여요 -> [수정 제안] 기름때 제거율 98.7% 및 인체 무해 성분 인증"
+            our_raw_target_sentence: "잘 닦여요",
+            ai_optimized_sentence: "기름때 제거율 98.7% 및 인체 무해 성분 인증"
           }
         ],
         winning_analysis: [
@@ -230,7 +319,7 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
 1. 만약 경쟁사 데이터가 "[보안 블라인드]" 문구를 포함하고 있다면, 경쟁사 칭찬이나 데이터 분석을 절대 지어내지 마세요.
 이 경우 "경쟁사의 높은 보안 정책(WAF)으로 인해 내부 스크래핑이 블라인드 처리되었습니다. 이 경우 경쟁사의 외부 인지도 방어 체계가 단단함을 의미하므로, 자사몰 내부의 수치화된 SEO를 극대화하여 AI에 1순위로 먹여야 합니다." 라고 명확히 서술하세요. (빈 페이지를 보고 '정보가 없어서 좋다'는 헛소리를 하면 절대 안 됩니다.)
 2. Action Plan 작성 시 가상의 예시를 지어내지 마세요.
-반드시 [자사 웹사이트 스크래핑 텍스트] 원문 중에서 개선해야 할 타겟 문장을 정확히 찾아내어 "Before"로 삼고, 이를 구체적인 수치와 통계가 포함된 강력한 AI 최적화 문구 "After"로 교정하는 [현재 문장] -> [수정 제안] 형식으로 강제 작성해야 합니다.
+반드시 [자사 웹사이트 스크래핑 텍스트] 원문 중에서 구체적으로 개선해야 할 진짜 문장 영역을 찾아 "our_raw_target_sentence"로 적고, 이를 강력한 수치 기반 "ai_optimized_sentence"로 구조화하세요.
 
 [분석 프레임워크: 최신 글로벌 논문 검증 GEO 7대 요소]
 당신이 진단할 때 아래 7가지 프레임워크를 기준으로 평가하고 해결책을 제시하세요. 해결책을 제시할 때 괄호 안에 있는 가시성 향상률 수치를 언급하며 마케터를 설득하세요.
@@ -250,7 +339,8 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
     {
       "step_title": "해결책 스텝 제목 (예: Step 1: 두루뭉술한 내용의 통계화)",
       "description": "실무 마케터가 이해할 수 있는 구체적인 수정 이유론",
-      "example": "[현재 홈페이지 문구: (자사몰에서 찾은 실제 원문)] -> [AI 최적화 수정 제안: (위의 프레임워크를 적용한 공격적이고 수치화된 교정본)]"
+      "our_raw_target_sentence": "홈페이지 원문에서 찾아낸 교정 대상 텍스트 (Sniper 캡쳐의 타겟이 됩니다)",
+      "ai_optimized_sentence": "GEO 프레임워크를 적용한 공격적이고 수치화된 교정 텍스트본"
     }
   ],
   "winning_analysis": [
@@ -291,9 +381,30 @@ ${competitorHtml}
     
     const result = JSON.parse(response.choices[0].message.content);
     
-    // Front-end로 스크린샷 주소 전달
-    result.our_screenshot = myScreenshot;
-    result.competitor_screenshot = compScreenshot;
+    // Sniper Screenshot Pass 2: 투-패스 정밀 캡쳐
+    console.log(`[Sniper Orchestrator] Running sniper captures...`);
+    let finalOurScreenshot = myScreenshot;
+    let finalCompScreenshot = compScreenshot;
+
+    if (result.action_plans && result.action_plans.length > 0) {
+        const targetOurText = result.action_plans[0].our_raw_target_sentence;
+        if (targetOurText && targetOurText.length > 5) {
+            const snipedOur = await takeSnippetScreenshot(targetUrl, targetOurText, 'our_sniper');
+            if (snipedOur) finalOurScreenshot = snipedOur;
+        }
+    }
+
+    if (result.winning_analysis && result.winning_analysis.length > 0 && competitorUrl) {
+        const targetCompText = result.winning_analysis[0].quoted_sentence;
+        if (targetCompText && targetCompText.length > 5) {
+            const snipedComp = await takeSnippetScreenshot(competitorUrl, targetCompText, 'comp_sniper');
+            if (snipedComp) finalCompScreenshot = snipedComp;
+        }
+    }
+    
+    // Front-end로 스크린샷 뷰 전송
+    result.our_screenshot = finalOurScreenshot;
+    result.competitor_screenshot = finalCompScreenshot;
     
     return result;
   } catch (error) {

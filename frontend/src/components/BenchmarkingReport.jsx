@@ -70,11 +70,16 @@ export default function BenchmarkingReport({ benchmarkingData }) {
                   border: '1px dashed #93C5FD'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '1.2rem' }}>✏️</span>
-                    <strong style={{ fontSize: '0.95rem' }}>이렇게 직접 수정해 보세요!</strong>
+                    <span style={{ fontSize: '1.2rem' }}>✂️</span>
+                    <strong style={{ fontSize: '0.95rem', color: '#1E3A8A' }}>[타겟 발견 & AI 팩트 교정본]</strong>
                   </div>
-                  <div style={{ fontSize: '1rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#1E3A8A' }}>
-                    {plan.example}
+                  <div style={{ fontSize: '0.95rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#475569', marginBottom: '0.5rem' }}>
+                    <span style={{ backgroundColor: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', color: '#991B1B', marginRight: '6px' }}>발견된 약점</span>
+                    "{plan.our_raw_target_sentence}"
+                  </div>
+                  <div style={{ fontSize: '1rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#047857', fontWeight: '500' }}>
+                    <span style={{ backgroundColor: '#D1FAE5', padding: '2px 6px', borderRadius: '4px', color: '#065F46', marginRight: '6px' }}>AI 수정안</span>
+                    {plan.ai_optimized_sentence}
                   </div>
                 </div>
               </div>
@@ -127,8 +132,8 @@ export default function BenchmarkingReport({ benchmarkingData }) {
                      
                      {benchmarkingData.competitor_screenshot && (
                         <div style={{ marginTop: '1.5rem', borderTop: '1px dashed #FCA5A5', paddingTop: '1rem' }}>
-                           <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#991B1B', display: 'block', marginBottom: '0.5rem' }}>📸 실제 데이터 출처 (경쟁사 스크린샷):</span>
-                           <img src={benchmarkingData.competitor_screenshot} alt="경쟁사 사이트" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', objectPosition: 'top', borderRadius: '8px', border: '1px solid #FCA5A5' }} />
+                           <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#991B1B', display: 'block', marginBottom: '0.5rem' }}>📸 실제 표적 영역 (경쟁사 스크린샷):</span>
+                           <img src={benchmarkingData.competitor_screenshot} alt="경쟁사 사이트" style={{ width: '100%', borderRadius: '8px', border: '2px solid #FCA5A5' }} />
                         </div>
                      )}
                   </div>
@@ -166,8 +171,8 @@ export default function BenchmarkingReport({ benchmarkingData }) {
 
                      {benchmarkingData.our_screenshot && (
                         <div style={{ marginTop: '1.5rem', borderTop: '1px dashed #10B981', paddingTop: '1rem' }}>
-                           <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#065F46', display: 'block', marginBottom: '0.5rem' }}>📸 현재 자사 사이트 (개선 전):</span>
-                           <img src={benchmarkingData.our_screenshot} alt="자사 사이트" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', objectPosition: 'top', borderRadius: '8px', border: '1px solid #6EE7B7' }} />
+                           <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#065F46', display: 'block', marginBottom: '0.5rem' }}>📸 개선 타겟 영역 (자사 사이트):</span>
+                           <img src={benchmarkingData.our_screenshot} alt="자사 사이트" style={{ width: '100%', borderRadius: '8px', border: '2px solid #34D399' }} />
                         </div>
                      )}
                   </div>
