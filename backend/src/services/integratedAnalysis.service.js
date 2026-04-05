@@ -9,9 +9,18 @@ export async function analyzeSearchDominance(keyword, searchData, geoResult, tru
     return {
       message: "통합 분석 결과 (Mock)",
       urgent_actions: [
-        { title: "웹 구조 최적화", description: "검색량 대비 AI 인용이 낮습니다. 구조화 데이터(Schema)를 추가하세요." },
-        { title: "UGC(블로그) 리뷰 확보", description: "네이버 기반 AI 점유율 확대를 위해 내돈내산 뷰티플 인플루언서 콘텐츠를 늘리세요." },
-        { title: "FAQ 추가", description: "소비자의 자주 묻는 질문을 H2 태그로 공홈에 배치하세요." }
+        { 
+          title: "웹 구조 통계/수치화 적용", 
+          description: "[현재 문장] 우리 제품은 세정력이 좋습니다. -> [수정 제안] 자체 임상 결과 기름때 제거율 98.7%를 검증받은 4세대 세정 기술을 적용했습니다." 
+        },
+        { 
+          title: "UGC 리뷰 인용구(Quotation) 전환", 
+          description: "[현재 문장] 많은 고객들이 만족합니다. -> [수정 제안] <q>3개월째 사용 중인데 성분이 착해서 아이 방에도 안심하고 써요 - 네이버 베스트 리뷰어</q>" 
+        },
+        { 
+          title: "FAQ 질문형(H2) 소제목 배치", 
+          description: "[현재 문장] 제품 스펙 및 상세정보 -> [수정 제안] H2: 세정티슈 구매 시 가장 중요한 살균력은 어느 정도인가요?" 
+        }
       ]
     };
   }

@@ -157,12 +157,12 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
           results.sort((a, b) => b.rawLength - a.rawLength);
           const bestChannel = results[0];
           
-          if (bestChannel && bestChannel.rawLength > 50) {
+          if (bestChannel && bestChannel.rawLength > 100) {
               competitorHtml = bestChannel.text;
               compScreenshot = bestChannel.screenshot;
               competitorUrl = bestChannel.originalUrl;
           } else {
-              competitorHtml = "모든 공식 채널 스크래핑 실패 (차단당함)";
+              competitorHtml = "[보안 블라인드] 경쟁사 보안 정책으로 인해 웹 구조 분석이 블라인드 처리되었습니다.";
           }
       } else {
           competitorHtml = "경쟁사 공식 채널(자사몰/스마트스토어) 검색 실패";
@@ -180,17 +180,12 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
           {
             step_title: "Step 1: AI 전용 '요약 섹션' 삽입",
             description: "웹사이트 본문 상단이나 하단에 AI가 긁어가기 좋게 3줄 요약을 넣어야 합니다.",
-            example: "1. 쿼시 세정티슈는 특수 멜트블로운 원단을 사용합니다. 2. 99.9% 살균력을 검증받았습니다. 3. 롤 타입으로 경제적입니다."
+            example: "[현재 문장] (데이터 없음) -> [수정 제안] 1. 특수 멜트블로운 원단 사용 2. 99.9% 살균력 3. 경제적 롤 타입"
           },
           {
-            step_title: "Step 2: 질문형 소제목(H2)으로 교체",
-            description: "단순히 '제품 특징'이라고 적지 말고, AI가 질문-답변 쌍으로 인식하기 쉬운 H2 태그를 사용하세요.",
-            example: "\"세정티슈 구매 시 가장 중요한 살균력은 어느 정도인가요?\""
-          },
-          {
-            step_title: "Step 3: 검색량 vs 가시성 불일치 해결",
-            description: "네이버 광고 API에서 추출한 연관 검색어를 본문 내 H2 태그와 텍스트에 자연스럽게 녹여내세요.",
-            example: "(예: 주방 세정티슈, 기름때 제거) 등의 키워드를 적극 삽입하여 가장 논리적인 답을 주는 구조를 완성하세요."
+            step_title: "Step 2: 수치 기반 팩트체크 강화",
+            description: "추상적인 수식어 대신 강력한 로우데이터(숫자)를 제시해야 AI가 신뢰합니다.",
+            example: "[현재 문장] 잘 닦여요 -> [수정 제안] 기름때 제거율 98.7% 및 인체 무해 성분 인증"
           }
         ],
         winning_analysis: [
@@ -206,14 +201,14 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const systemPrompt = `당신은 리버스 엔지니어링 기반의 GEO 전략 분석가입니다. 
-당신의 임무는 1위 경쟁사의 실제 스크래핑된 웹페이지 데이터와 우리 브랜드의 데이터를 1:1로 비교하여 팩트 기반의 역공학 가이드를 내는 것입니다.
+당신의 임무는 1위 경쟁사의 스크래핑된 웹페이지 데이터와 우리 브랜드의 데이터를 1:1로 비교하여 팩트 기반의 역공학 가이드를 내는 것입니다.
 무작정 경쟁사가 완벽하다고 가정(Hallucination)하여 지어내지 마세요. 주어진 텍스트 데이터만을 기반으로 진단해야 합니다.
 
-[🚨 최고 중요 지침 (모순 제거)]
-만약 1위 경쟁사의 스크래핑 텍스트가 너무 짧거나, 단순 이미지라 글씨가 없거나, 제품에 대한 구체적 내용이 텅 비어있다면 절대로 억지로 칭찬하지 마세요. (예: "경쟁사는 정보가 없어서 좋습니다" 같은 모순된 말 금지)
-대신 명확하게 꼬집으세요:
-"경쟁사(OOO)는 외부 마케팅(블로그, 리뷰 등)의 인지도로 인해 현재 1위로 랭크되어 있으나, 정작 공식 웹사이트의 구조나 텍스트 최적화 수준은 매우 열악합니다." 
-그리고 이 상황을 **'우리가 쉽게 1위를 빼앗을 수 있는 절호의 기회(Opportunity)'**로 정의하여 Gap Analysis 와 Action Plan을 논리적으로 작성하세요.
+[🚨 최고 중요 지침 (모순 제거 및 블라인드 처리)]
+1. 만약 경쟁사 데이터가 "[보안 블라인드]" 문구를 포함하고 있다면, 경쟁사 칭찬이나 데이터 분석을 절대 지어내지 마세요.
+이 경우 "경쟁사의 높은 보안 정책(WAF)으로 인해 내부 스크래핑이 블라인드 처리되었습니다. 이 경우 경쟁사의 외부 인지도 방어 체계가 단단함을 의미하므로, 자사몰 내부의 수치화된 SEO를 극대화하여 AI에 1순위로 먹여야 합니다." 라고 명확히 서술하세요. (빈 페이지를 보고 '정보가 없어서 좋다'는 헛소리를 하면 절대 안 됩니다.)
+2. Action Plan 작성 시 가상의 예시를 지어내지 마세요.
+반드시 [자사 웹사이트 스크래핑 텍스트] 원문 중에서 개선해야 할 타겟 문장을 정확히 찾아내어 "Before"로 삼고, 이를 구체적인 수치와 통계가 포함된 강력한 AI 최적화 문구 "After"로 교정하는 [현재 문장] -> [수정 제안] 형식으로 강제 작성해야 합니다.
 
 [분석 프레임워크: 최신 글로벌 논문 검증 GEO 7대 요소]
 당신이 진단할 때 아래 7가지 프레임워크를 기준으로 평가하고 해결책을 제시하세요. 해결책을 제시할 때 괄호 안에 있는 가시성 향상률 수치를 언급하며 마케터를 설득하세요.
@@ -221,28 +216,27 @@ export async function generateBenchmarkingReport(keyword, targetUrl, brandName, 
 2. 출처 명시 및 인용 (Cite Sources): 주장을 뒷받침하는 외부 출처 링크나 '출처:' 텍스트가 있는지? (미적용 사이트가 적용 시 가시성 최대 115.1% 상승 입증)
 3. 전문가 인용구 삽입 (Quotation Addition): 관련 전문가나 신뢰할 만한 리뷰어의 직접 속의 인용구(<blockquote>/<q>)가 있는지? (최대 41% 가시성 상승 입증)
 4. 유창성 및 평이체 (Fluency & Easy-to-Understand): 복잡한 문장을 매끄럽고 AI가 해석하기 쉬운 구조로 썼는지? (가시성 15~30% 상승 입증)
-5. 키워드 스터핑/광고 배제 (No Keyword Stuffing): '최고', 'TOP 5', '무조건' 같은 과거 SEO 스팸성 키워드를 완전히 제거하여 페널티를 막았는지?
-6. 질문형 제목과 FAQ 구조 (Q&A/FAQ): H2 소제목이 질문형("~은 무엇인가?")이고 3개 이상의 쌍으로 된 FAQ 섹션이 있는지?
-7. 비교표 및 결론 요약 (Table + Bottom Conclusion): <table> 활용 및 표 바로 밑 요약 서술, 그리고 문서 맨 밑 "결론적으로..." 형태의 종결부 요약이 있는지?
+5. 질문형 제목과 FAQ 구조 (Q&A/FAQ): H2 소제목이 질문형이고 3개 이상의 쌍으로 된 FAQ 섹션이 있는지?
+6. 비교표 및 결론 요약 (Table + Bottom Conclusion): <table> 활용 및 표 바로 밑 요약 서술, 문서 맨 밑 요약 구문이 있는지?
 
 [출력 형식]
 반드시 아래 JSON 형식으로 반환하세요.
 {
-  "key_success_factor": "경쟁사의 강점 요약. (단, 경쟁사 데이터가 부실하다면 '현재 경쟁사는 AI 최적화가 사실상 제로에 가깝다는 점'을 팩트 위주로 강하게 지적)",
-  "gap_analysis": "자사 웹사이트와의 결정적 차이점. (경쟁사 데이터가 부실할 경우, 우리가 텍스트만 조금 구조화해도 AI 노출 점유율을 순식간에 빼앗아 올 수 있음을 서술)",
+  "key_success_factor": "경쟁사의 강점 요약. (블라인드 처리되었다면 '보안 정책으로 블라인드 처리됨'을 명시)",
+  "gap_analysis": "자사 웹사이트와의 결정적 차이점. (블라인드 시, 타겟 분석 대신 자사몰 내부 약점 공략에 집중해야 함을 강조)",
   "action_plans": [
     {
-      "step_title": "해결책 스텝 제목 (예: Step 1: AI 전용 '요약 섹션' 삽입)",
-      "description": "왜 이 스텝이 필요한지에 대한 설명 및 1위를 탈환하기 위한 구체적 방법",
-      "example": "실제 페이지에 넣어야 할 텍스트/마케팅 문구 예시 (구체적으로)"
+      "step_title": "해결책 스텝 제목 (예: Step 1: 두루뭉술한 내용의 통계화)",
+      "description": "실무 마케터가 이해할 수 있는 구체적인 수정 이유론",
+      "example": "[현재 홈페이지 문구: (자사몰에서 찾은 실제 원문)] -> [AI 최적화 수정 제안: (위의 프레임워크를 적용한 공격적이고 수치화된 교정본)]"
     }
   ],
   "winning_analysis": [
     {
       "competitor_name": "브랜드명",
-      "quoted_sentence": "경쟁사 텍스트 중 인용할 문구 (내용이 아예 없다면 '데이터 부재(자사몰 관리 방치)'로 작성할 것)",
-      "why_it_won": "채택 이유 (해시태그 형태, 예: #구체적수치 혹은 #최적화부실)",
-      "our_counter_strategy": "자사 본문에 삽입하여 확실하게 역전할 수 있는 매우 강력한 스나이핑(Sniping) 문구 제안"
+      "quoted_sentence": "경쟁사 실제 인용 문구 (블라인드 처리되었거나 내용이 없으면 '보안 블라인드 처리'로 작성할 것)",
+      "why_it_won": "채택 이유 (해시태그 형태, 예: #구체적수치 혹은 #보안블라인드)",
+      "our_counter_strategy": "자사 본문에 기반하여 AI가 우선순위로 채택할 만한 수치+팩트 기반의 초정밀 카운터(Before & After) 문구 제안"
     }
   ]
 }`;
