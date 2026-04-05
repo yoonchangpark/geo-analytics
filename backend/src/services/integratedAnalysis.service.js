@@ -31,15 +31,35 @@ export async function analyzeSearchDominance(keyword, searchData, geoResult, tru
 대신 AI가 원문 답변에서 1위로 추천한 "진짜 승자(True Winner)"는 바로 '${trueWinnerName}' 입니다.
 반드시 이 사실을 분석에 포함하여, 왜 기존 브랜드들이 소외되고 해당 브랜드가 AI의 선택을 받았는지 강력하게 경고하세요.` : '';
 
+  // 🚨 LLM Hallucination (숫자 오판 및 모순) 방지를 위한 자바스크립트 사전 계산 로직 탑재
+  let preciseQuadrantLock = "각 브랜드별 사분면 지표 (당신은 이 수학적 분류값을 절대적으로 신뢰해야 하며 반대로 말해선 안 됩니다):\n";
+  if (Array.isArray(geoResult) && searchData) {
+      const avgSearchVol = Object.values(searchData).reduce((sum, data) => sum + (data.searchVolume || 0), 0) / (Object.keys(searchData).length || 1);
+      
+      geoResult.forEach(item => {
+         const brand = item.name;
+         const geoShare = item.value; // %
+         const sv = searchData[brand]?.searchVolume || 0;
+         
+         let quadrant = "";
+         if (sv > avgSearchVol && geoShare >= 20) quadrant = "[고수요-고가시성] 검색 수요도 높고 AI 점유율도 훌륭한 마켓 리더 확보 상태";
+         else if (sv > avgSearchVol && geoShare < 20) quadrant = "[고수요-저가시성] 🚨위험: 네이버 검색량 인지도는 높으나, AI 최적화(GEO) 태만으로 AI 추천에서 밀려나 타 브랜드에게 파이를 뺏기고 있음";
+         else if (sv <= avgSearchVol && geoShare >= 20) quadrant = "[저수요-고가시성] 💎초고효율: 네이버 순수 검색량은 타겟보다 낮지만, 기술적/마케팅적 SEO 최적화가 완벽해 AI의 선택을 독점, 대형 브랜드를 역으로 압도함 (매우 훌륭함)";
+         else quadrant = "[저수요-저가시성] 검색량도 낮고 AI 점유율도 낮아 총체적 개선 필요";
+         
+         preciseQuadrantLock += `- 브랜드: ${brand} (검색량: ${sv}, AI 점유율: ${geoShare}%) -> 【강제 분류 결과: ${quadrant}】\n`;
+      });
+  }
+
   const userPrompt = `
 [입력 데이터]
 1. 키워드: ${keyword}
-2. 네이버 검색량 데이터 (연관도/수요): ${JSON.stringify(searchData)}
-3. GEO 분석 결과 (Local AI 인용 점유율): ${JSON.stringify(geoResult)}
+2. 사전 계산 알고리즘의 확정된 팩트 데이터:
+${preciseQuadrantLock}
 
 [요구사항]
-위 데이터를 바탕으로 '전통적 검색 점유율(검색량/수요)'과 'AI 인용 점유율(GEO 비율)'의 격차를 분석하세요.
-특히, 특정 브랜드가 검색량은 높은데 AI 인용 점유율이 0%에 수렴하거나 부족한 경우 그 기술적/마케팅적 이유(예: 기술적 SEO 부족, 구조화 데이터 부재, 사용자 리뷰 UGC 부족 등)를 지적하세요. 반대인 경우(검색량은 낮은데 GEO가 높음)도 분석하세요.
+위 팩트 데이터를 바탕으로 '전통적 검색 점유율(검색량/수요)'과 'AI 인용 점유율(GEO 비율)'의 상관관계를 통찰하세요.
+절대로 '[저수요-고가시성]'으로 분류된 효율적인 브랜드를 두고 "AI의 선택에서 소외되었다" 거나 "점유율이 낮다"는 식의 거짓말(Hallucination)을 하지 마십시오. 자바스크립트가 넘겨준 【강제 분류 결과】의 맥락을 그대로 따르십시오.
 ${trueWinnerWarning}
 
 [출력 포맷]
