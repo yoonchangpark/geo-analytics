@@ -86,22 +86,18 @@ router.post('/run', async (req, res) => {
     
     // 6. Benchmarking & Structure Analysis Node (Competitor vs Brand)
 
-    let topCompetitorName = targetBrands.length > 1 ? targetBrands[1] : '경쟁사';
-        
-    if (trueWinnerName && trueWinnerName.length > 0 && trueWinnerName !== brandName) {
-        // 찾아낸 진짜 승자가 우리 브랜드가 아니라면 역공학 타겟으로 덮어씀 (입력하지 않은 브랜드가 나와도 보여줌)
-        topCompetitorName = trueWinnerName;
+    // 무조건 수학적 통계(PAWC 점유율) 기반으로 1위를 한 경쟁사를 벤치마킹 타겟으로 삼아 모든 컴포넌트 간 논리적 모순 방지.
+    let topCompetitorName = '경쟁사';
+    const sortedCompetitors = naverShareAnalysis?.pieChartData
+        ?.filter(item => item.name !== brandName && item.value > 0)
+        .sort((a,b) => b.value - a.value);
+    
+    if (sortedCompetitors && sortedCompetitors.length > 0) {
+        topCompetitorName = sortedCompetitors[0].name; // 수학적 1위 경쟁사 강제 할당
+    } else if (trueWinnerName && trueWinnerName !== brandName) {
+        topCompetitorName = trueWinnerName; // 최후의 보루 (점유율 계산 실패시)
     } else {
-        // 만약 예외적으로 1위가 우리 브랜드라면, 입력한 경쟁사들 중 2위를 타겟으로 삼음
-        const otherBrandsList = naverShareAnalysis?.pieChartData
-          ?.filter(item => item.name !== brandName && item.value > 0)
-          .sort((a,b) => b.value - a.value);
-        
-        if (otherBrandsList && otherBrandsList.length > 0) {
-            topCompetitorName = otherBrandsList[0].name;
-        } else {
-            topCompetitorName = targetBrands.find(b => b !== brandName) || '경쟁사A';
-        }
+        topCompetitorName = targetBrands.find(b => b !== brandName) || '경쟁사A';
     }
 
     // We will use Naver Share analysis for the Dominance Analysis, as it's the Local market context
