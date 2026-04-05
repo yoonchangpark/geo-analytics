@@ -29,7 +29,7 @@ function App() {
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.card', '.recharts-wrapper', 'h3', 'img', 'table'] }
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.card', '.recharts-wrapper', 'h3', 'img', 'table', '.page-break-safe', '.grid'] }
     };
     
     // 다운로드 중에는 버튼 숨기기 등을 할 수 있으나 그대로 진행

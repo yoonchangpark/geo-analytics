@@ -39,7 +39,7 @@ export default function BenchmarkingReport({ benchmarkingData }) {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
              {benchmarkingData.winning_analysis.map((item, idx) => (
-                <div key={idx} className="grid grid-2" style={{ 
+                <div key={idx} className="grid grid-2 page-break-safe" style={{ 
                   gap: '1rem', 
                   backgroundColor: '#FFFFFF', 
                   padding: '1.5rem', 
