@@ -17,7 +17,8 @@ function fallbackSearchData(targetBrands) {
     '랩신': { searchVolume: 4540, pc: 1040, mobile: 3500, docCount: 8500 },
     '스너글': { searchVolume: 24210, pc: 4210, mobile: 20000, docCount: 65000 },
     '다우니': { searchVolume: 25340, pc: 4940, mobile: 20400, docCount: 120000 },
-    '피존': { searchVolume: 3160, pc: 680, mobile: 2480, docCount: 15000 }
+    '피존': { searchVolume: 3160, pc: 680, mobile: 2480, docCount: 15000 },
+    '프로쉬': { searchVolume: 34500, pc: 5500, mobile: 29000, docCount: 65000 }
   };
 
   const metrics = {};
