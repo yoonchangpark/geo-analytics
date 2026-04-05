@@ -25,11 +25,7 @@ export async function analyzeSearchDominance(keyword, searchData, geoResult, tru
     };
   }
 
-  const trueWinnerWarning = trueWinnerName ? `
-[🚨 핵심 경고 사항 🚨]
-현재 입력된 자사 및 타겟 경쟁사들은 AI 인용 점유율에서 거의 전멸(패배)했습니다. 
-대신 AI가 원문 답변에서 1위로 추천한 "진짜 승자(True Winner)"는 바로 '${trueWinnerName}' 입니다.
-반드시 이 사실을 분석에 포함하여, 왜 기존 브랜드들이 소외되고 해당 브랜드가 AI의 선택을 받았는지 강력하게 경고하세요.` : '';
+  let trueWinnerWarning = ''; // Will be populated after math verification
 
   // 🚨 LLM Hallucination (숫자 오판 및 모순) 방지를 위한 자바스크립트 사전 계산 로직 탑재
   let preciseQuadrantLock = "각 브랜드별 사분면 지표 (당신은 이 수학적 분류값을 절대적으로 신뢰해야 하며 반대로 말해선 안 됩니다):\n";
@@ -53,10 +49,16 @@ export async function analyzeSearchDominance(keyword, searchData, geoResult, tru
       const highestShare = Math.max(...geoResult.map(i => i.value));
       const mathWinner = geoResult.find(i => i.value === highestShare)?.name || "없음";
       preciseQuadrantLock += `\n[절대 규칙] 수학적 팩트에 따라 AI 점유율이 가장 높은 최종 1위 승자는 '${mathWinner}'입니다. 분석 코멘트 작성 시 절대로 다른 브랜드를 승자로 지칭하지 마세요.\n`;
+      
+      // 수학적 검증: 만약 AI가 예측한 trueWinnerName이 수학적 1위(mathWinner)와 다르다면, 예측 과정의 환각(Hallucination)이므로 경고를 폐기함.
+      if (trueWinnerName && trueWinnerName === mathWinner) {
+         trueWinnerWarning = `\n[🚨 핵심 경고 사항 🚨]\n초기 분석 결과 기존 경쟁사들은 패배하였고 현재 수학적 1위를 차지한 진짜 승자(True Winner)는 바로 '${trueWinnerName}' 입니다. 왜 해당 브랜드가 AI의 선택을 독점하고 있는지 분석에 강조하세요.`;
+      }
   }
 
   const userPrompt = `
 [입력 데이터]
+${trueWinnerWarning}
 1. 키워드: ${keyword}
 2. 사전 계산 알고리즘의 확정된 팩트 데이터:
 ${preciseQuadrantLock}
@@ -82,7 +84,7 @@ ${trueWinnerWarning}
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo",
       response_format: { type: "json_object" },
-      temperature: 0.2, // 좀 더 날카로운 분석을 위해 낮춤
+      temperature: 0.2,
       messages: [
         { role: 'system', content: 'You are an elite B2B SEO/GEO Growth Hacker parsing data.' },
         { role: 'user', content: userPrompt }

@@ -36,12 +36,55 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
     let browser;
     try {
         console.log(`[Puppeteer Mode] Scraping local: ${url}`);
+        
+        // 1차 우회 시도: 순수 Axios로 HTML 구조만 빠르게 긁어오기 (일부 WAF는 브라우저 엔진보다 단순 HTTP GET을 더 선호함)
+        try {
+            const axiosHTML = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Cache-Control': 'max-age=0',
+                    'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"'
+                },
+                timeout: 8000
+            });
+            const $ = cheerio.load(axiosHTML.data);
+            const textHTML = $('body').text().replace(/\s+/g, ' ');
+            if (textHTML.length > 300 && !textHTML.includes('보안 확인') && !textHTML.includes('보안접속')) {
+                console.log(`[Axios Bypassing Success] on ${url}`);
+                // 단순 텍스트만 성공했을 경우 스크린샷은 없지만 분석엔 충분함
+                return { text: textHTML.substring(0, 3000), screenshot: null, rawLength: textHTML.length };
+            }
+        } catch(axErr) {
+            console.log(`[Axios Bypassing Failed] falling back to Puppeteer Stealth...`);
+        }
+
+        // 2차 우회 시도: 고급 Puppeteer Stealth 모드
         browser = await puppeteer.launch({
             headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox', 
+                '--disable-setuid-sandbox',
+                '--disable-blink-features=AutomationControlled',
+                '--window-position=0,0',
+                '--ignore-certificate-errors',
+                '--ignore-certificate-errors-spki-list',
+                '--disable-infobars'
+            ]
         });
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        
+        // 치명적 WAF 블록(웹드라이버 감지) 회피를 위한 브라우저 핑거프린트 오버라이드
+        await page.evaluateOnNewDocument(() => {
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            Object.defineProperty(navigator, 'languages', { get: () => ['ko-KR', 'ko', 'en-US', 'en'] });
+            Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+        });
+        
         await page.setViewport({ width: 1280, height: 1024 });
         
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -87,7 +130,20 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         let finalLength = cleanedText.length;
         
         // 네이버 WAF 및 방화벽 필터링
-        if (cleanedText.includes('현재 서비스 접속이 불가') || cleanedText.includes('Please complete the security verification') || cleanedText.includes('요청하신 페이지를 찾을 수 없습니다')) {
+        if (cleanedText.includes('현재 서비스 접속이 불가') || cleanedText.includes('Please complete the security verification') || cleanedText.includes('요청하신 페이지를 찾을 수 없습니다') || cleanedText.includes('Not Found') || cleanedText.length < 50) {
+            
+            // 3차 우회 시도 (서바이벌 모드): 대상 사이트에 들어가지 못하더라도, 네이버 지식스니펫/검색결과 미리보기 텍스트만이라도 스크래핑해서 넘김
+            try {
+                console.log(`[WAF Blocked] Falling back to Naver Search Snippets for ${brandKey}`);
+                const fallbackUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(brandKey + ' 공식홈페이지 특장점')}`;
+                await page.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: 5000 });
+                const fallbackText = await page.evaluate(() => document.body.innerText);
+                const safeFallback = fallbackText.replace(/\s+/g, ' ');
+                if (safeFallback.length > 200) {
+                   return { text: safeFallback.substring(0, 3000), screenshot: null, rawLength: safeFallback.length };
+                }
+            } catch(fallbackErr) {}
+            
             finalContent = "네이버 보안 방화벽(WAF)에 의해 일시적으로 차단되었습니다.";
             finalLength = 0;
         } else {
