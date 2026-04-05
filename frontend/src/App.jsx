@@ -131,7 +131,7 @@ function App() {
 
       <div className="card" style={{ maxWidth: '900px', margin: '0 auto 2rem auto', padding: '2rem' }}>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) minmax(250px, 2fr) minmax(150px, 1fr)', gap: '1rem' }}>
+          <div className="form-responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) minmax(250px, 2fr) minmax(150px, 1fr)', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>목표 키워드</label>
               <input type="text" className="input-field" value={keyword} onChange={e => setKeyword(e.target.value)} required placeholder="예: 섬유유연제 추천" />
@@ -146,7 +146,7 @@ function App() {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginTop: '0.5rem' }}>
+          <div className="flex-responsive" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginTop: '0.5rem' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>타겟 경쟁사 (콤마 구분, 미입력 시 AI가 연관 경쟁사 자동 추출)</label>
               <input type="text" className="input-field" value={competitorsText} onChange={e => setCompetitorsText(e.target.value)} placeholder="예: 쿼시, 홈스타, 랩신" />

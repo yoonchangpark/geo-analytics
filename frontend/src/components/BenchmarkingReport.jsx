@@ -39,9 +39,7 @@ export default function BenchmarkingReport({ benchmarkingData }) {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
              {benchmarkingData.winning_analysis.map((item, idx) => (
-                <div key={idx} style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: '1fr 1fr', 
+                <div key={idx} className="grid grid-2" style={{ 
                   gap: '1rem', 
                   backgroundColor: '#FFFFFF', 
                   padding: '1.5rem', 
@@ -61,12 +59,10 @@ export default function BenchmarkingReport({ benchmarkingData }) {
                      
                      <div style={{ borderTop: '1px solid #FCA5A5', paddingTop: '1rem' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#991B1B', display: 'block', marginBottom: '0.5rem' }}>AI가 선택한 이유:</span>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                           {item.why_it_won.split(' ').map((tag, tIdx) => (
-                             <span key={tIdx} style={{ backgroundColor: '#FEE2E2', color: '#B91C1C', padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
-                               {tag}
-                             </span>
-                           ))}
+                        <div style={{ backgroundColor: '#FEE2E2', padding: '12px', borderRadius: '8px', borderLeft: '4px solid #B91C1C' }}>
+                           <p style={{ margin: 0, color: '#991B1B', fontSize: '0.9rem', lineHeight: '1.6', wordBreak: 'keep-all' }}>
+                             {item.why_it_won}
+                           </p>
                         </div>
                      </div>
                      

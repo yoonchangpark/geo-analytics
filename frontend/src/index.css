@@ -98,6 +98,34 @@ a {
   .grid-2, .grid-3 {
     grid-template-columns: 1fr;
   }
+  .form-responsive-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .flex-responsive {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .flex-responsive > div {
+    width: 100% !important;
+  }
+  .flex-responsive button {
+    width: 100% !important;
+  }
+  h1 {
+    font-size: 1.8rem !important;
+  }
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  .container {
+    padding: 10px;
+  }
+  .card {
+    padding: 1rem !important;
+  }
+  table {
+    font-size: 0.8rem;
+  }
 }
 
 @media print {
