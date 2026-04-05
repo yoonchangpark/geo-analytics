@@ -28,73 +28,13 @@ export default function BenchmarkingReport({ benchmarkingData }) {
         </div>
       </div>
 
-      <div className="card" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <h3 style={{ color: '#0F172A', marginBottom: '1.5rem', fontSize: '1.4rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem' }}>
-          💡 벤치마킹을 통한 자사몰 역전 가이드 (Action Plan)
-        </h3>
-        <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '2rem' }}>
-          개발자나 마케터가 <b>당장 오늘 자사몰(또는 스마트스토어)에 적용할 수 있는</b> 3단계의 구체적인 개선 가이드를 정리했습니다.
-        </p>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {benchmarkingData.action_plans && benchmarkingData.action_plans.map((plan, index) => (
-            <div key={index} style={{ 
-              backgroundColor: '#F8FAFC', 
-              padding: '1.5rem', 
-              borderRadius: '12px', 
-              borderLeft: '5px solid #3B82F6',
-              boxShadow: '0 1px 3px 0 rgba(0,0,0,0.05)',
-              display: 'flex',
-              gap: '1.25rem',
-              alignItems: 'flex-start'
-            }}>
-              <div style={{ 
-                     backgroundColor: '#DBEAFE', color: '#1D4ED8', minWidth: '40px', height: '40px', 
-                     borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                     fontWeight: 'bold', fontSize: '1.2rem', flexShrink: 0 
-                 }}>
-                 {index + 1}
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ color: '#1E293B', fontSize: '1.2rem', marginBottom: '0.75rem', fontWeight: 'bold' }}>
-                  {plan.step_title}
-                </h4>
-                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-                  {plan.description}
-                </p>
-                <div style={{ 
-                  backgroundColor: '#EFF6FF', 
-                  padding: '1.25rem', 
-                  borderRadius: '8px',
-                  color: '#1D4ED8',
-                  border: '1px dashed #93C5FD'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '1.2rem' }}>✂️</span>
-                    <strong style={{ fontSize: '0.95rem', color: '#1E3A8A' }}>[타겟 발견 & AI 팩트 교정본]</strong>
-                  </div>
-                  <div style={{ fontSize: '0.95rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#475569', marginBottom: '0.5rem' }}>
-                    <span style={{ backgroundColor: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', color: '#991B1B', marginRight: '6px' }}>발견된 약점</span>
-                    "{plan.our_raw_target_sentence}"
-                  </div>
-                  <div style={{ fontSize: '1rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#047857', fontWeight: '500' }}>
-                    <span style={{ backgroundColor: '#D1FAE5', padding: '2px 6px', borderRadius: '4px', color: '#065F46', marginRight: '6px' }}>AI 수정안</span>
-                    {plan.ai_optimized_sentence}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {benchmarkingData.winning_analysis && benchmarkingData.winning_analysis.length > 0 && (
-        <div style={{ marginTop: '3rem' }}>
+        <div style={{ marginBottom: '3rem' }}>
           <h3 style={{ color: '#0F172A', marginBottom: '1.5rem', fontSize: '1.4rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem' }}>
-            👑 경쟁사 승리 공식 (Winning Formulas) 파해치기
+            👑 1. 타겟 경쟁사 승리 공식 (Winning Formulas) 증거 분석
           </h3>
           <p style={{ color: '#475569', fontSize: '0.95rem', marginBottom: '2rem' }}>
-             AI 모델이 경쟁사의 어떤 문구를 '진짜 근거'로 가져왔는지 분석하고, 자사 웹페이지에 삽입할 더 강력한 카운터 문구를 제안합니다.
+             AI 모델이 경쟁사의 어떤 문구를 '진짜 근거'로 채택했는지 분석하고, 자사 웹페이지에 결여된 구조적 맹점을 파헤칩니다.
           </p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -181,6 +121,66 @@ export default function BenchmarkingReport({ benchmarkingData }) {
           </div>
         </div>
       )}
+
+      <div className="card" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+        <h3 style={{ color: '#0F172A', marginBottom: '1.5rem', fontSize: '1.4rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem' }}>
+          💡 2. 벤치마킹을 통한 자사몰 역전 가이드 (Action Plan)
+        </h3>
+        <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '2rem' }}>
+          위의 분석 결과를 토대로 개발자나 마케터가 <b>당장 오늘 자사몰(또는 스마트스토어)에 적용할 수 있는</b> 3단계의 구체적인 가이드를 정리했습니다.
+        </p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {benchmarkingData.action_plans && benchmarkingData.action_plans.map((plan, index) => (
+            <div key={index} style={{ 
+              backgroundColor: '#F8FAFC', 
+              padding: '1.5rem', 
+              borderRadius: '12px', 
+              borderLeft: '5px solid #3B82F6',
+              boxShadow: '0 1px 3px 0 rgba(0,0,0,0.05)',
+              display: 'flex',
+              gap: '1.25rem',
+              alignItems: 'flex-start'
+            }}>
+              <div style={{ 
+                     backgroundColor: '#DBEAFE', color: '#1D4ED8', minWidth: '40px', height: '40px', 
+                     borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                     fontWeight: 'bold', fontSize: '1.2rem', flexShrink: 0 
+                 }}>
+                 {index + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ color: '#1E293B', fontSize: '1.2rem', marginBottom: '0.75rem', fontWeight: 'bold' }}>
+                  {plan.step_title}
+                </h4>
+                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+                  {plan.description}
+                </p>
+                <div style={{ 
+                  backgroundColor: '#EFF6FF', 
+                  padding: '1.25rem', 
+                  borderRadius: '8px',
+                  color: '#1D4ED8',
+                  border: '1px dashed #93C5FD'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '1.2rem' }}>✂️</span>
+                    <strong style={{ fontSize: '0.95rem', color: '#1E3A8A' }}>[타겟 발견 & AI 팩트 교정본]</strong>
+                  </div>
+                  <div style={{ fontSize: '0.95rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#475569', marginBottom: '0.5rem' }}>
+                    <span style={{ backgroundColor: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', color: '#991B1B', marginRight: '6px' }}>발견된 약점</span>
+                    "{plan.our_raw_target_sentence}"
+                  </div>
+                  <div style={{ fontSize: '1rem', lineHeight: '1.6', paddingLeft: '1.7rem', color: '#047857', fontWeight: '500' }}>
+                    <span style={{ backgroundColor: '#D1FAE5', padding: '2px 6px', borderRadius: '4px', color: '#065F46', marginRight: '6px' }}>AI 수정안</span>
+                    {plan.ai_optimized_sentence}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
     </div>
   );
