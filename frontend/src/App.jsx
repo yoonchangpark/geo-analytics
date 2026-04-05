@@ -16,6 +16,8 @@ function App() {
   const [competitorsText, setCompetitorsText] = useState('');
   
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
@@ -38,6 +40,16 @@ function App() {
     setLoading(true);
     setResults(null);
     setError('');
+    setProgress(0);
+    setTimeLeft(120);
+
+    const timer = setInterval(() => {
+      setProgress(old => {
+        const next = old + (Math.random() * 1.5 + 0.5);
+        return next > 99 ? 99 : next;
+      });
+      setTimeLeft(old => (old > 0 ? old - 1 : 0));
+    }, 1000);
 
     let naverRawData = null;
     
@@ -103,6 +115,8 @@ function App() {
       console.error(err);
       setError(err.message);
     } finally {
+      clearInterval(timer);
+      setProgress(100);
       setLoading(false);
     }
   };
@@ -132,8 +146,8 @@ function App() {
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>경쟁사 (콤마 구분)</label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input type="text" className="input-field" value={competitorsText} onChange={e => setCompetitorsText(e.target.value)} placeholder="미입력 시 AI 연관검색어 자동추출" />
-              <button type="submit" className="btn" disabled={loading} style={{ marginBottom: '1rem', height: '46px' }}>
-                {loading ? '브라우저 익스텐션 긁는 중...' : '진단 시작'}
+              <button type="submit" className="btn" disabled={loading} style={{ marginBottom: '1rem', height: '46px', whiteSpace: 'nowrap', minWidth: '130px' }}>
+                {loading ? '분석 중...' : '진단 시작'}
               </button>
             </div>
           </div>
@@ -150,7 +164,26 @@ function App() {
         <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--primary)' }}>
           <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(79,70,229,0.2)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <p style={{ marginTop: '1rem', fontWeight: '500' }}>AI 시뮬레이션 및 데이터 수집 중 입니다... (최대 1분 소요)</p>
+          
+          <div style={{ maxWidth: '400px', margin: '2rem auto 0 auto', backgroundColor: '#E2E8F0', borderRadius: '8px', overflow: 'hidden', height: '8px' }}>
+            <div style={{ width: `${progress}%`, height: '100%', backgroundColor: 'var(--primary)', transition: 'width 1s ease' }}></div>
+          </div>
+          
+          <p style={{ marginTop: '1rem', fontWeight: 'bold', fontSize: '1.2rem', color: '#1E293B' }}>
+            상위 노출 AI 모델 시뮬레이션 중... {Math.floor(progress)}%
+          </p>
+          <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+            예상 남은 시간: 약 {Math.floor(timeLeft / 60)}분 {timeLeft % 60}초
+          </p>
+          
+          {timeLeft <= 90 && (
+             <div style={{ marginTop: '1.5rem', animation: 'fadeIn 1s' }}>
+                <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
+                <p style={{ color: '#B45309', fontWeight: 'bold', backgroundColor: '#FEF3C7', display: 'inline-block', padding: '0.75rem 1.5rem', borderRadius: '20px', margin: 0 }}>
+                  ☕ 각 경쟁사 웹사이트를 1:1로 딥-크롤링 중입니다.<br/>분석이 완료 될 때까지 커피 한 잔 마시고 오세요!
+                </p>
+             </div>
+          )}
         </div>
       )}
 
