@@ -104,13 +104,14 @@ export async function aggregateShareResultsLLM(loopResults) {
   final_shares.sort((a, b) => b.avg_share - a.avg_share);
 
   const top_competitor = final_shares.length > 0 && final_shares[0].avg_share > 0 ? final_shares[0].brand : "측정불가";
+  const tcData = final_shares.find(s => s.brand === top_competitor) || { avg_mentions: 0, pawc_score: 0, consistency_score: 0 };
   
   return {
     final_shares: final_shares,
     top_competitor: top_competitor,
     top_reasons: [
-      `자바스크립트 네이티브 PAWC 엔진 분석 결과, ${top_competitor} 브랜드는 전체 답변의 상단(20% 이내)에 자주 위치했습니다.`,
-      `주요 추천 키워드 주변에 배치되어 PAWC 가중치가 월등히 높습니다.`
+      `자바스크립트 기반 표적 추적 결과, ${top_competitor} 브랜드는 전체 모델 추천 과정에서 평균 ${tcData.avg_mentions}번 노출되며 가장 독보적인 언급 빈도를 보였습니다.`,
+      `키워드 밀착 알고리즘(PAWC) 가중치를 연산한 결과, 최고점인 ${tcData.pawc_score}점을 획득하여 다른 브랜드 대비 위치적(상단) 우위를 점했습니다.`
     ],
     action_tip: "자사 브랜드 역시 긍정적 텍스트와 함께 AI 요약문 최상단에 노출되도록 SEO를 개편해야 합니다."
   };
