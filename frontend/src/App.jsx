@@ -128,28 +128,31 @@ function App() {
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Generative Engine Optimization 트렌드 및 가시성 분석 SaaS</p>
       </header>
 
-      <div className="card" style={{ maxWidth: '800px', margin: '0 auto 2rem auto' }}>
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', alignItems: 'end' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>목표 키워드</label>
-            <input type="text" className="input-field" value={keyword} onChange={e => setKeyword(e.target.value)} required />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>자사 브랜딩 URL (분석 대상)</label>
-            <input type="url" className="input-field" value={targetUrl} onChange={e => setTargetUrl(e.target.value)} required />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>자사 브랜드명</label>
-            <input type="text" className="input-field" value={brandName} onChange={e => setBrandName(e.target.value)} required />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>경쟁사 (콤마 구분)</label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input type="text" className="input-field" value={competitorsText} onChange={e => setCompetitorsText(e.target.value)} placeholder="미입력 시 AI 연관검색어 자동추출" />
-              <button type="submit" className="btn" disabled={loading} style={{ marginBottom: '1rem', height: '46px', whiteSpace: 'nowrap', minWidth: '130px' }}>
-                {loading ? '분석 중...' : '진단 시작'}
-              </button>
+      <div className="card" style={{ maxWidth: '900px', margin: '0 auto 2rem auto', padding: '2rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) minmax(250px, 2fr) minmax(150px, 1fr)', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>목표 키워드</label>
+              <input type="text" className="input-field" value={keyword} onChange={e => setKeyword(e.target.value)} required placeholder="예: 섬유유연제 추천" />
             </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>자사 브랜딩 URL (분석 대상)</label>
+              <input type="url" className="input-field" value={targetUrl} onChange={e => setTargetUrl(e.target.value)} required placeholder="https://..." />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>자사 브랜드명</label>
+              <input type="text" className="input-field" value={brandName} onChange={e => setBrandName(e.target.value)} required placeholder="예: 위칙" />
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginTop: '0.5rem' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem' }}>타겟 경쟁사 (콤마 구분, 미입력 시 AI가 연관 경쟁사 자동 추출)</label>
+              <input type="text" className="input-field" value={competitorsText} onChange={e => setCompetitorsText(e.target.value)} placeholder="예: 쿼시, 홈스타, 랩신" />
+            </div>
+            <button type="submit" className="btn" disabled={loading} style={{ height: '46px', whiteSpace: 'nowrap', minWidth: '180px', fontSize: '1.1rem', fontWeight: 'bold' }}>
+              {loading ? '분석 중...' : '🚀 진단 시작'}
+            </button>
           </div>
         </form>
       </div>
