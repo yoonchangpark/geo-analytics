@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "GEO 안티그래비티 크롤러",
+  "version": "1.0",
+  "description": "네이버 검색결과를 스크래핑하여 GEO 대시보드로 전달합니다.",
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "host_permissions": [
+    "*://search.naver.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:3000/*", "http://127.0.0.1:3000/*", "http://localhost:5173/*"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
