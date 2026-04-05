@@ -7,6 +7,7 @@ import SearchDominanceQuadrant from './components/SearchDominanceQuadrant';
 import BrandMetricsTable from './components/BrandMetricsTable';
 import BenchmarkingReport from './components/BenchmarkingReport';
 import TopCompetitorHighlight from './components/TopCompetitorHighlight';
+import html2pdf from 'html2pdf.js';
 
 function App() {
   const [keyword, setKeyword] = useState('세정티슈 추천');
@@ -17,6 +18,20 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+
+  const downloadPDF = () => {
+    const element = document.getElementById('report-capture-area');
+    const opt = {
+      margin:       [10, 0, 10, 0],
+      filename:     `GEO_Analytics_Report_${brandName}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // 다운로드 중에는 버튼 숨기기 등을 할 수 있으나 그대로 진행
+    html2pdf().set(opt).from(element).save();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -140,7 +155,7 @@ function App() {
       )}
 
       {results && (
-        <div className="dashboard-results">
+        <div className="dashboard-results" id="report-capture-area" style={{ backgroundColor: 'white', padding: '10px' }}>
 
           <UrgentActions analysisData={results.integratedAnalysis} />
 
@@ -230,14 +245,14 @@ function App() {
 
           <div className="no-print" style={{ marginTop: '2rem', textAlign: 'center' }}>
             <button 
-              onClick={() => window.print()}
+              onClick={downloadPDF}
               className="btn" 
-              style={{ padding: '1rem 3rem', fontSize: '1.2rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', backgroundColor: '#0F172A' }}
+              style={{ padding: '1rem 3rem', fontSize: '1.2rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
             >
-              <span>📄</span> 보고서 다운로드 (PDF)
+              <span>📥</span> 보고서 원클릭 다운로드 (PDF)
             </button>
             <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#64748B' }}>
-              크롬 브라우저에서 'PDF로 저장'을 선택하여 다운로드 하세요.
+              서식 깨짐 없이 보이는 그대로 리포트가 깔끔하게 다운로드 됩니다.
             </p>
           </div>
         </div>
