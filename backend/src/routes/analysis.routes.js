@@ -51,6 +51,21 @@ router.post('/run', async (req, res) => {
        naverSimulation = await runRagSimulation(keyword, targetBrands, 'naver');
     }
 
+    // 1.5 항상 시장 내 숨겨진 1위(True Winner)를 색출하여 타겟 브랜드 배열에 강제 편입 (사용자 입력 외 AI 선호 브랜드 발견 기능)
+    let trueWinnerName = null;
+    if (naverSimulation.textAnswers && naverSimulation.textAnswers.length > 0) {
+        console.log("[Route] Extracting Absolute True Winner from text...");
+        trueWinnerName = await findTrueWinnerBrand(naverSimulation.textAnswers[0]);
+        if (trueWinnerName) {
+            console.log(`[Route] True Winner extracted: ${trueWinnerName}`);
+            // 배열에 없으면 즉시 편입하여 이후 모든 PAWC 분석과 검색량 조회 대상에 포함시킴
+            if (!targetBrands.includes(trueWinnerName)) {
+                console.log(`[Route] Injecting True Winner '${trueWinnerName}' into targetBrands array.`);
+                targetBrands.push(trueWinnerName);
+            }
+        }
+    }
+
     // 2. Calculate AI Visibility & Citation Score for both
     const [globalScoring, naverScoring] = await Promise.all([
       calculateScoring(globalSimulation.textAnswers, brandName, keyword),
@@ -70,16 +85,6 @@ router.post('/run', async (req, res) => {
     const searchMetrics = await getRealSearchMetrics(keyword, targetBrands);
     
     // 6. Benchmarking & Structure Analysis Node (Competitor vs Brand)
-    
-    // 항상 시장 내 숨겨진 1위(True Winner)를 색출하여 벤치마킹 타겟으로 삼음 (사용자 입력 외 브랜드 발견 기능)
-    let trueWinnerName = null;
-    if (naverSimulation.textAnswers && naverSimulation.textAnswers.length > 0) {
-        console.log("[Route] Extracting Absolute True Winner from text...");
-        trueWinnerName = await findTrueWinnerBrand(naverSimulation.textAnswers[0]);
-        if (trueWinnerName) {
-            console.log(`[Route] True Winner extracted: ${trueWinnerName}`);
-        }
-    }
 
     let topCompetitorName = targetBrands.length > 1 ? targetBrands[1] : '경쟁사';
         
