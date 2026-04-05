@@ -42,9 +42,31 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         });
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1280, height: 1024 });
         
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(r => setTimeout(r, 2500));
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        
+        // SPA (React/Vue) 및 지연 로딩(Lazy Load) 이미지/텍스트 강제 렌더링을 위한 자동 스크롤 로직
+        await page.evaluate(async () => {
+            await new Promise((resolve) => {
+                let totalHeight = 0;
+                let distance = 300; // 한 번에 스크롤할 픽셀
+                let timer = setInterval(() => {
+                    let scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+
+                    // 최대 6000 픽셀까지만 스크롤 하거나 바닥에 닿으면 종료
+                    if(totalHeight >= scrollHeight || totalHeight > 6000){
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 400); // 400ms 마다 스크롤
+            });
+        });
+        
+        // 스크롤 완료 후 돔이 안정화 될 때까지 1.5초 추가 대기
+        await new Promise(r => setTimeout(r, 1500));
         
         const screenshotDir = path.resolve('public', 'screenshots');
         if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
