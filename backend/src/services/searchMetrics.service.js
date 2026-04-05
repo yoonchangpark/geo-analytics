@@ -39,16 +39,18 @@ function fallbackSearchData(targetBrands) {
 }
 
 export async function getRealSearchMetrics(keyword, targetBrands) {
-  if (!process.env.NAVER_AD_API_KEY || !process.env.NAVER_AD_SECRET_KEY || !process.env.NAVER_AD_CUSTOMER_ID) {
-    console.log("[Search API] No Naver credentials found in .env. Falling back to local data map.");
-    return fallbackSearchData(targetBrands);
+  // 대표님 자동 배포를 위한 임시 하드코딩 (Render에서 Environment Variable 설정을 건너뛰기 위함)
+  const API_KEY = process.env.NAVER_AD_API_KEY || '0100000000b7be9b0a3ddf6d1b056a2ac910a21e22c08445385f5362c701896db0537b3704';
+  const SECRET_KEY = process.env.NAVER_AD_SECRET_KEY || 'AQAAAAC3vpsKPd9tGwVqKskQoh4iYsDYLCpMrla9Gwbidzwp+A==';
+  const CUSTOMER_ID = process.env.NAVER_AD_CUSTOMER_ID || '4342542';
+  
+  if (!API_KEY || !SECRET_KEY) {
+     console.log("[Search API] No Naver credentials found. Falling back to local data map.");
+     return fallbackSearchData(targetBrands);
   }
 
   const metrics = {};
   try {
-     const API_KEY = process.env.NAVER_AD_API_KEY;
-     const SECRET_KEY = process.env.NAVER_AD_SECRET_KEY;
-     const CUSTOMER_ID = process.env.NAVER_AD_CUSTOMER_ID;
      
      // Naver keywordstool supports up to 5 keywords per request. We slice array into chunks of 5.
      for (let i = 0; i < targetBrands.length; i += 5) {
