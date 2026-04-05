@@ -17,8 +17,8 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
     if (process.env.SCRAPER_API_KEY) {
         try {
             console.log(`[Proxy Mode] Fetching via ScraperAPI: ${url}`);
-            const proxyUrl = `http://api.scraperapi.com?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&render=true`;
-            const response = await axios.get(proxyUrl, { timeout: 30000 });
+            const proxyUrl = `http://api.scraperapi.com?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&render=true&premium=true&country_code=kr`;
+            const response = await axios.get(proxyUrl, { timeout: 60000 });
             const $ = cheerio.load(response.data);
             const text = $('body').text().replace(/\s+/g, ' ');
             
