@@ -12,9 +12,9 @@ export default function BrandMetricsTable({ searchMetrics, globalShareData, nave
     return {
       brand,
       searchVolume: sMetrics.searchVolume,
-      globalMentions: globalItem.mentions,
+      globalMentions: globalItem.pawc_score,
       globalShare: globalItem.value,
-      naverMentions: item.mentions,
+      naverMentions: item.pawc_score,
       naverShare: item.value,
       isMain: brand === brandName
     };
@@ -36,8 +36,8 @@ export default function BrandMetricsTable({ searchMetrics, globalShareData, nave
             <tr style={{ borderBottom: '2px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
               <th style={{ padding: '12px', color: '#475569', fontWeight: '600' }}>브랜드명</th>
               <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>월간 검색량 (검색 수요)</th>
-              <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>글로벌 AI 언급 빈도</th>
-              <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>네이버 AI 언급 빈도 </th>
+              <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>글로벌 AI 노출 강도</th>
+              <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>네이버 AI 노출 강도</th>
               <th style={{ padding: '12px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>최종 점유율 가중점 (Naver)</th>
             </tr>
           </thead>
@@ -51,10 +51,10 @@ export default function BrandMetricsTable({ searchMetrics, globalShareData, nave
                   {row.searchVolume.toLocaleString()} 건
                 </td>
                 <td style={{ padding: '12px', textAlign: 'right', color: '#64748B' }}>
-                  {row.globalMentions.toFixed(1)} 회
+                  {row.globalMentions.toFixed(1)} 점
                 </td>
                 <td style={{ padding: '12px', textAlign: 'right', color: '#0F172A', fontWeight: '500' }}>
-                  {row.naverMentions.toFixed(1)} 회
+                  {row.naverMentions.toFixed(1)} 점
                 </td>
                 <td style={{ padding: '12px', textAlign: 'right', fontWeight: '600', color: row.isMain ? '#EF4444' : '#3B82F6' }}>
                   {row.naverShare.toFixed(1)}%

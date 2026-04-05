@@ -49,6 +49,10 @@ export async function analyzeSearchDominance(keyword, searchData, geoResult, tru
          
          preciseQuadrantLock += `- 브랜드: ${brand} (검색량: ${sv}, AI 점유율: ${geoShare}%) -> 【강제 분류 결과: ${quadrant}】\n`;
       });
+      
+      const highestShare = Math.max(...geoResult.map(i => i.value));
+      const mathWinner = geoResult.find(i => i.value === highestShare)?.name || "없음";
+      preciseQuadrantLock += `\n[절대 규칙] 수학적 팩트에 따라 AI 점유율이 가장 높은 최종 1위 승자는 '${mathWinner}'입니다. 분석 코멘트 작성 시 절대로 다른 브랜드를 승자로 지칭하지 마세요.\n`;
   }
 
   const userPrompt = `
