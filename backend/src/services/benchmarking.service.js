@@ -123,13 +123,12 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         const screenshotUrl = `${backendUrl}/screenshots/${filename}`;
 
         const text = await page.evaluate(() => document.body.innerText);
-        await browser.close();
         
         let cleanedText = text.replace(/\s+/g, ' ');
         let finalContent = "";
         let finalLength = cleanedText.length;
         
-        // 네이버 WAF 및 방화벽 필터링
+        // 네이버 WAF 및 방화벽 필터링 검출
         if (cleanedText.includes('현재 서비스 접속이 불가') || cleanedText.includes('Please complete the security verification') || cleanedText.includes('요청하신 페이지를 찾을 수 없습니다') || cleanedText.includes('Not Found') || cleanedText.length < 50) {
             
             // 3차 우회 시도 (서바이벌 모드): 대상 사이트에 들어가지 못하더라도, 네이버 지식스니펫/검색결과 미리보기 텍스트만이라도 스크래핑해서 넘김
@@ -140,6 +139,7 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
                 const fallbackText = await page.evaluate(() => document.body.innerText);
                 const safeFallback = fallbackText.replace(/\s+/g, ' ');
                 if (safeFallback.length > 200) {
+                   await browser.close();
                    return { text: safeFallback.substring(0, 3000), screenshot: null, rawLength: safeFallback.length };
                 }
             } catch(fallbackErr) {}
@@ -150,10 +150,25 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
             finalContent = finalLength > 50 ? cleanedText.substring(0, 3000) : "데이터가 짧음";
         }
         
+        await browser.close();
         return { text: finalContent, screenshot: screenshotUrl, rawLength: finalLength };
     } catch (e) {
-        if (browser) await browser.close();
         console.error(`Puppeteer failed for ${url}:`, e.message);
+        try {
+            console.log(`[Crash Fallback] Attempting Naver Snippet survival mode for ${brandKey}`);
+            if (!browser || !browser.isConnected()) {
+                browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            }
+            const fallbackPage = await browser.newPage();
+            const fallbackUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(brandKey + ' 공식특장점')}`;
+            await fallbackPage.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: 8000 });
+            const fallbackText = await fallbackPage.evaluate(() => document.body.innerText);
+            await browser.close();
+            const safeFb = fallbackText.replace(/\s+/g, ' ');
+            if (safeFb.length > 100) return { text: safeFb.substring(0, 3000), screenshot: null, rawLength: safeFb.length };
+        } catch(fe) {
+            if (browser && browser.isConnected()) await browser.close();
+        }
         return { text: "접속 차단됨 또는 타임아웃", screenshot: null, rawLength: 0 };
     }
 }
