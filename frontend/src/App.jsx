@@ -8,6 +8,7 @@ import BrandMetricsTable from './components/BrandMetricsTable';
 import BenchmarkingReport from './components/BenchmarkingReport';
 import TopCompetitorHighlight from './components/TopCompetitorHighlight';
 import PaymentModal from './components/PaymentModal';
+import LoginModal from './components/LoginModal';
 import FeedbackBox from './components/FeedbackBox';
 import html2pdf from 'html2pdf.js';
 
@@ -24,6 +25,7 @@ function App() {
   const [error, setError] = useState(null);
   
   const [showPayment, setShowPayment] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [adminUnlocked, setAdminUnlocked] = useState(
     typeof window !== 'undefined' ? localStorage.getItem('geo_admin_unlocked') === 'true' : false
   );
@@ -164,33 +166,59 @@ function App() {
   const handleSecretUnlock = () => {
     localStorage.setItem('geo_admin_unlocked', 'true');
     setAdminUnlocked(true);
-    alert('관리자 모드가 활성화되었습니다. 무제한 테스트가 가능합니다.');
+    setShowLogin(false);
+    alert('관리자 계정으로 로그인되었습니다. 무제한 테스트가 가능합니다.');
   };
 
   return (
     <div className="container">
       {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onSuccess={handleSecretUnlock} />}
       
       <header style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
-        <div 
-          onDoubleClick={handleSecretUnlock}
-          style={{ 
-            position: 'absolute', 
-            top: '10px', 
-            right: '0px', 
-            backgroundColor: '#F59E0B', 
-            color: 'white', 
-            padding: '0.4rem 1rem', 
-            borderRadius: '20px', 
-            fontWeight: '800', 
-            letterSpacing: '1px', 
-            userSelect: 'none',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-            border: '2px solid #D97706'
-          }}
-          title={adminUnlocked ? "관리자 권한 활성화됨" : "더블 클릭 시 관리자 메뉴"}
-        >
-          {adminUnlocked ? 'BETA (Master)' : 'BETA'}
+        <div style={{ position: 'absolute', top: '10px', right: '0px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div 
+            onDoubleClick={handleSecretUnlock}
+            style={{ 
+              backgroundColor: '#F59E0B', 
+              color: 'white', 
+              padding: '0.4rem 1rem', 
+              borderRadius: '20px', 
+              fontWeight: '800', 
+              letterSpacing: '1px', 
+              userSelect: 'none',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+              border: '2px solid #D97706'
+            }}
+            title={adminUnlocked ? "관리자 권한 활성화됨" : "더블 클릭 시 관리자 메뉴"}
+          >
+            {adminUnlocked ? 'BETA (Master)' : 'BETA'}
+          </div>
+          
+          <button
+            onClick={() => {
+              if (adminUnlocked) {
+                localStorage.removeItem('geo_admin_unlocked');
+                setAdminUnlocked(false);
+                alert('로그아웃 되었습니다.');
+              } else {
+                setShowLogin(true);
+              }
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              color: '#64748B',
+              border: '1px solid #CBD5E1',
+              padding: '0.4rem 1rem',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {adminUnlocked ? '로그아웃' : '로그인'}
+          </button>
         </div>
         <h1 style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '0.5rem', paddingTop: '1.5rem' }}>GEO Tool</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Generative Engine Optimization 트렌드 및 가시성 분석 SaaS</p>
