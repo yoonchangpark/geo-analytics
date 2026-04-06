@@ -168,7 +168,12 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         try {
             console.log(`[Crash Fallback] Attempting Naver Snippet survival mode for ${brandKey}`);
             if (!browser || !browser.isConnected()) {
-                const retryArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
+                const retryArgs = [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--ignore-certificate-errors',
+                    '--ignore-certificate-errors-spki-list'
+                ];
                 if (process.env.SCRAPER_API_KEY) retryArgs.push(`--proxy-server=http://proxy-server.scraperapi.com:8001`);
                 
                 browser = await puppeteer.launch({ headless: 'new', args: retryArgs });
@@ -177,7 +182,6 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
                     const fallbackPage = await browser.newPage();
                     await fallbackPage.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
                     await fallbackPage.close(); 
-                    // Note: In puppeteer, auth is per-page, so we need to auth the newly created page below.
                 }
             }
             const fallbackPage = await browser.newPage();
@@ -185,7 +189,7 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
                 await fallbackPage.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
             }
             const fallbackUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(brandKey + ' 공식특장점')}`;
-            await fallbackPage.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: 8000 });
+            await fallbackPage.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
             const fallbackText = await fallbackPage.evaluate(() => document.body.innerText);
             await browser.close();
             const safeFb = fallbackText.replace(/\s+/g, ' ');
