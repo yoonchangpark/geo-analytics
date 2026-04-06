@@ -105,7 +105,10 @@ function App() {
       naverRawData = await scrapeViaExtension;
 
       const compArray = competitorsText.split(',').map(c => c.trim()).filter(c => c !== '');
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      // Vite(import.meta.env) 및 기존 시스템 호환
+      const API_URL = (import.meta && import.meta.env && import.meta.env.VITE_API_URL) 
+                      || (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) 
+                      || 'http://localhost:5000';
       const res = await fetch(`${API_URL}/api/analysis/run`, {
         method: 'POST',
         headers: {
