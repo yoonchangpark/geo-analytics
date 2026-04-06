@@ -84,7 +84,7 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         const page = await browser.newPage();
         
         if (process.env.SCRAPER_API_KEY) {
-            await page.authenticate({ username: 'scraperapi.render=true', password: process.env.SCRAPER_API_KEY });
+            await page.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
         }
         
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
@@ -255,7 +255,7 @@ async function takeSnippetScreenshot(url, targetText, brandKey) {
         const page = await browser.newPage();
         
         if (process.env.SCRAPER_API_KEY) {
-            await page.authenticate({ username: 'scraperapi.render=true', password: process.env.SCRAPER_API_KEY });
+            await page.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
         }
         
         // 핑거프린팅 완화

@@ -47,14 +47,20 @@ Return ONLY a JSON object with keys: "contextScore" (number) and "reasoning" (st
       model: "gpt-3.5-turbo",
       temperature: 0,
       max_tokens: 100, // 토큰 제한으로 비용 절약 및 응답 속도 극대화
+      response_format: { type: "json_object" },
       messages: [{ role: 'user', content: prompt }]
     });
     
     const resultText = response.choices[0].message.content;
-    const jsonStr = resultText.substring(resultText.indexOf('{'), resultText.lastIndexOf('}') + 1);
-    return JSON.parse(jsonStr);
+    try {
+        const jsonStr = resultText.substring(resultText.indexOf('{'), resultText.lastIndexOf('}') + 1);
+        return JSON.parse(jsonStr);
+    } catch (parseErr) {
+        console.error("Hybrid G-Eval JSON parse error:", parseErr.message, "Response was:", resultText);
+        return { contextScore: 5, reasoning: "분석 형식이 올바르지 않아 중립 점수로 처리되었습니다." };
+    }
   } catch (error) {
-    console.error("Hybrid G-Eval error:", error);
+    console.error("Hybrid G-Eval network/API error:", error.message);
     return { contextScore: 5, reasoning: "LLM 평가 지연으로 인해 중립 점수로 처리되었습니다." };
   }
 }
