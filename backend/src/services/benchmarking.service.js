@@ -28,7 +28,7 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
             return { text: finalContent, screenshot: null, rawLength: rawLength };
         } catch (e) {
             console.error(`[Proxy Error] ScraperAPI failed for ${url}:`, e.message);
-            return { text: "프록시 우회 서버 접속 실패", screenshot: null, rawLength: 0 };
+            // DO NOT return here, fallback to Puppeteer Mode below!
         }
     }
 
@@ -168,9 +168,22 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
         try {
             console.log(`[Crash Fallback] Attempting Naver Snippet survival mode for ${brandKey}`);
             if (!browser || !browser.isConnected()) {
-                browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+                const retryArgs = ['--no-sandbox', '--disable-setuid-sandbox'];
+                if (process.env.SCRAPER_API_KEY) retryArgs.push(`--proxy-server=http://proxy-server.scraperapi.com:8001`);
+                
+                browser = await puppeteer.launch({ headless: 'new', args: retryArgs });
+                
+                if (process.env.SCRAPER_API_KEY) {
+                    const fallbackPage = await browser.newPage();
+                    await fallbackPage.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
+                    await fallbackPage.close(); 
+                    // Note: In puppeteer, auth is per-page, so we need to auth the newly created page below.
+                }
             }
             const fallbackPage = await browser.newPage();
+            if (process.env.SCRAPER_API_KEY) {
+                await fallbackPage.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
+            }
             const fallbackUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(brandKey + ' 공식특장점')}`;
             await fallbackPage.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: 8000 });
             const fallbackText = await fallbackPage.evaluate(() => document.body.innerText);
@@ -187,11 +200,21 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
 async function findCompetitorUrls(brandName) {
     let browser;
     try {
+        const puppeteerArgs = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'];
+        if (process.env.SCRAPER_API_KEY) {
+            puppeteerArgs.push(`--proxy-server=http://proxy-server.scraperapi.com:8001`);
+        }
+
         browser = await puppeteer.launch({
             headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: puppeteerArgs
         });
         const page = await browser.newPage();
+        
+        if (process.env.SCRAPER_API_KEY) {
+            await page.authenticate({ username: 'scraperapi.residential=true', password: process.env.SCRAPER_API_KEY });
+        }
+        
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
         
         const targetUrls = [];
