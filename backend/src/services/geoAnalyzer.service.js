@@ -110,8 +110,8 @@ export async function aggregateShareResultsLLM(loopResults) {
     final_shares: final_shares,
     top_competitor: top_competitor,
     top_reasons: [
-      `AI 자연어 문맥을 정밀 추적한 결과, ${top_competitor} 브랜드는 AI의 전체 추천 과정에서 평균 ${tcData.avg_mentions}번 거론되며 가장 독보적인 텍스트 점유율을 차지했습니다.`,
-      `최상단 노출 가중치(Top-Ranking Weight)를 분석한 결과, 최고점인 ${tcData.pawc_score}점을 획득하여 다른 경쟁 브랜드들을 밀어내고 소비자의 시선이 가장 먼저 닿는 최상단(1순위) 자리를 독식했습니다.`
+      `AI 자연어 문맥을 추적한 결과, ${top_competitor} 브랜드는 전체 AI 답변 과정에서 평균 ${tcData.avg_mentions}번 거론되며 가장 높은 기준 텍스트 점유율을 기록했습니다.`,
+      `최상단 노출 가중치(Top-Ranking Weight) 연산 결과 최고점인 ${tcData.pawc_score}점을 획득했습니다. 이는 알고리즘의 구조적 특성상, 향후 타겟 고객이 AI 검색 엔진에 질의했을 때 해당 브랜드가 최우선(1순위) 추천 답변으로 노출될 확률이 수학적으로 가장 높음을 시사합니다.`
     ],
     action_tip: "자사 브랜드 역시 긍정적 텍스트와 함께 AI 요약문 최상단에 노출되도록 SEO를 개편해야 합니다."
   };
