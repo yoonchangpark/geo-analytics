@@ -8,32 +8,14 @@ function generateSignature(timestamp, method, path, secretKey) {
 }
 
 function fallbackSearchData(targetBrands) {
-  const realData = {
-    '쿼시': { searchVolume: 47880, pc: 7480, mobile: 40400, docCount: 154000 },
-    '위칙': { searchVolume: 19660, pc: 4360, mobile: 15300, docCount: 89000 },
-    '스카트': { searchVolume: 3580, pc: 710, mobile: 2870, docCount: 12000 },
-    '윗클': { searchVolume: 1200, pc: 230, mobile: 970, docCount: 5000 },
-    '클레바': { searchVolume: 300, pc: 50, mobile: 250, docCount: 1200 },
-    '랩신': { searchVolume: 4540, pc: 1040, mobile: 3500, docCount: 8500 },
-    '스너글': { searchVolume: 24210, pc: 4210, mobile: 20000, docCount: 65000 },
-    '다우니': { searchVolume: 25340, pc: 4940, mobile: 20400, docCount: 120000 },
-    '피존': { searchVolume: 3160, pc: 680, mobile: 2480, docCount: 15000 },
-    '프로쉬': { searchVolume: 34500, pc: 5500, mobile: 29000, docCount: 65000 }
-  };
-
   const metrics = {};
-  targetBrands.forEach((brand, index) => {
-    if (realData[brand]) {
-      metrics[brand] = realData[brand];
-    } else {
-      const baseVol = 30000 / (index + 1);
-      metrics[brand] = {
-        searchVolume: Math.floor(baseVol),
-        pc: Math.floor(baseVol * 0.2),
-        mobile: Math.floor(baseVol * 0.8),
-        docCount: Math.floor(baseVol * 3.5)
-      };
-    }
+  targetBrands.forEach((brand) => {
+    metrics[brand] = {
+      searchVolume: 0,
+      pc: 0,
+      mobile: 0,
+      docCount: 0
+    };
   });
   return metrics;
 }

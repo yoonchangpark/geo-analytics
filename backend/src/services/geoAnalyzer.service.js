@@ -157,7 +157,7 @@ export async function runGeoShareAnalysis(textAnswers, targetBrands, keyword, en
 
 // 3. 자사 및 타겟 경쟁사 전멸 시 실제 우승자(True Winner) 추출기
 export async function findTrueWinnerBrand(aiAnswerText) {
-  if (!process.env.OPENAI_API_KEY) return '피죤'; // Mock Data
+  if (!process.env.OPENAI_API_KEY) return '서버 API 키 설정 오류'; // Fail fast instead of hallucinating
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const prompt = `다음은 AI 검색엔진의 반환 결과 텍스트입니다:
