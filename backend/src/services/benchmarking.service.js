@@ -62,20 +62,31 @@ async function scrapeWithProxyOrPuppeteer(url, brandKey) {
             console.log(`[Axios Bypassing Failed] falling back to Puppeteer Stealth...`);
         }
 
-        // 2차 우회 시도: 고급 Puppeteer Stealth 모드
+        // 2차 우회 시도: 고급 Puppeteer Stealth 모드 + Residential Proxy
+        const puppeteerArgs = [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled',
+            '--window-position=0,0',
+            '--ignore-certificate-errors',
+            '--ignore-certificate-errors-spki-list',
+            '--disable-infobars'
+        ];
+        
+        if (process.env.SCRAPER_API_KEY) {
+            puppeteerArgs.push(`--proxy-server=http://proxy-server.scraperapi.com:8001`);
+        }
+
         browser = await puppeteer.launch({
             headless: 'new',
-            args: [
-                '--no-sandbox', 
-                '--disable-setuid-sandbox',
-                '--disable-blink-features=AutomationControlled',
-                '--window-position=0,0',
-                '--ignore-certificate-errors',
-                '--ignore-certificate-errors-spki-list',
-                '--disable-infobars'
-            ]
+            args: puppeteerArgs
         });
         const page = await browser.newPage();
+        
+        if (process.env.SCRAPER_API_KEY) {
+            await page.authenticate({ username: 'scraperapi.render=true', password: process.env.SCRAPER_API_KEY });
+        }
+        
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
         
         // 치명적 WAF 블록(웹드라이버 감지) 회피를 위한 브라우저 핑거프린트 오버라이드
@@ -231,15 +242,29 @@ async function takeSnippetScreenshot(url, targetText, brandKey) {
     let browser;
     try {
         console.log(`[Sniper Screenshot] Targeting on ${brandKey}: "${targetText.substring(0, 30)}..."`);
+        
+        const puppeteerArgs = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled'];
+        if (process.env.SCRAPER_API_KEY) {
+            puppeteerArgs.push(`--proxy-server=http://proxy-server.scraperapi.com:8001`);
+        }
+
         browser = await puppeteer.launch({
             headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: puppeteerArgs
         });
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        if (process.env.SCRAPER_API_KEY) {
+            await page.authenticate({ username: 'scraperapi.render=true', password: process.env.SCRAPER_API_KEY });
+        }
+        
+        // 핑거프린팅 완화
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        await page.evaluateOnNewDocument(() => { Object.defineProperty(navigator, 'webdriver', { get: () => undefined }); });
+        
         await page.setViewport({ width: 1280, height: 1024 });
 
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 50000 });
         await new Promise(r => setTimeout(r, 1500));
 
         const success = await page.evaluate(async (textToFind) => {
