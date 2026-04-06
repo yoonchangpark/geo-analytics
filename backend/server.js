@@ -14,7 +14,19 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+const allowedOrigins = ['http://localhost:3000', 'https://geo-analytics-sage.vercel.app', 'https://geo-analytics-fqlaw68bz-yoonchangparks-projects.vercel.app'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // С크린샷 정적 파일 서빙
