@@ -1,11 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const DATASET_FILE = path.join(DATA_DIR, 'geo_finetune_dataset.jsonl');
+
+// Initialize Supabase Client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+let supabase = null;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 /**
  * AI의 정상 응답(Ground-Truth)을 jsonl 포맷으로 로깅합니다.
@@ -15,6 +24,7 @@ const DATASET_FILE = path.join(DATA_DIR, 'geo_finetune_dataset.jsonl');
  */
 export async function appendDatasetLog(systemPrompt, userPrompt, assistantResponse) {
   try {
+    // 1. Local Fallback Backup (JSONL)
     if (!fs.existsSync(DATA_DIR)) {
       await fs.promises.mkdir(DATA_DIR, { recursive: true });
     }
@@ -28,12 +38,27 @@ export async function appendDatasetLog(systemPrompt, userPrompt, assistantRespon
     };
 
     const jsonlString = JSON.stringify(logEntry) + '\n';
-
-    // 비동기로 append (블로킹 방지)
     await fs.promises.appendFile(DATASET_FILE, jsonlString, 'utf8');
     
-    // 너무 잦은 로그 방지용 (필요시 활성화)
-    // console.log(`[Dataset Logger] Successfully logged 1 sample for Fine-tuning.`);
+    // 2. Cloud DB Permanent Storage (Supabase)
+    if (supabase) {
+        const { error } = await supabase
+            .from('ml_dataset_logs')
+            .insert([
+                {
+                    system_prompt: systemPrompt,
+                    user_prompt: userPrompt,
+                    assistant_response: assistantResponse
+                }
+            ]);
+            
+        if (error) {
+            console.error(`[Supabase Error] Failed to upload dataset log:`, error.message);
+        } else {
+            console.log(`[Dataset Logger] Successfully backed up 1 sample to Supabase.`);
+        }
+    }
+
   } catch (error) {
     console.error(`[Dataset Logger Error] Failed to append log:`, error.message);
   }
