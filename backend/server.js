@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import analysisRoutes from './src/routes/analysis.routes.js';
+import datasetRoutes from './src/routes/dataset.routes.js';
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use('/screenshots', express.static(path.join(__dirname, 'public', 'screensho
 
 // Main analysis route
 app.use('/api/analysis', analysisRoutes);
+app.use('/api/dataset', datasetRoutes); // 파인튜닝 데이터셋 라우터
+
 
 // Health check
 app.get('/health', (req, res) => {

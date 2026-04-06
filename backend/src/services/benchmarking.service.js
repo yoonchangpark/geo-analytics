@@ -446,7 +446,7 @@ ${competitorHtml}
 `;
 
   try {
-    const response = await openai.chat.completions.create({
+    const rawResponse = await openai.chat.completions.create({
       model: "gpt-4-turbo",
       response_format: { type: "json_object" },
       temperature: 0.3,
@@ -456,7 +456,13 @@ ${competitorHtml}
       ]
     });
     
-    const result = JSON.parse(response.choices[0].message.content);
+    const responseString = rawResponse.choices[0].message.content;
+    const result = JSON.parse(responseString);
+    
+    // 파싱 성공 시 (에러 안남) 로깅 (비동기로 실행되므로 await 안해도 좋음, 블로킹 방지)
+    import('../utils/datasetLogger.js').then(({ appendDatasetLog }) => {
+       appendDatasetLog(systemPrompt, userPrompt, responseString);
+    }).catch(err => console.error("Logger import failed:", err));
     
     // Sniper Screenshot Pass 2: 투-패스 정밀 캡쳐
     console.log(`[Sniper Orchestrator] Running sniper captures...`);

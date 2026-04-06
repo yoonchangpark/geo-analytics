@@ -81,7 +81,7 @@ ${trueWinnerWarning}
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const rawResponse = await openai.chat.completions.create({
       model: "gpt-4-turbo",
       response_format: { type: "json_object" },
       temperature: 0.2,
@@ -90,7 +90,20 @@ ${trueWinnerWarning}
         { role: 'user', content: userPrompt }
       ]
     });
-    return JSON.parse(response.choices[0].message.content);
+    
+    const responseString = rawResponse.choices[0].message.content;
+    const parsedData = JSON.parse(responseString);
+    
+    // 파싱 성공 시 (에러 안남) 로깅 (비동기로 실행되므로 await 안해도 좋음, 블로킹 방지)
+    import('../utils/datasetLogger.js').then(({ appendDatasetLog }) => {
+       appendDatasetLog(
+         'You are an elite B2B SEO/GEO Growth Hacker parsing data.',
+         userPrompt,
+         responseString
+       );
+    }).catch(err => console.error("Logger import failed:", err));
+
+    return parsedData;
   } catch (error) {
     console.error("analyzeSearchDominance error:", error);
     return null;
