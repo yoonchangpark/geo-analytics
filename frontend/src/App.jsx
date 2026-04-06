@@ -214,8 +214,7 @@ function App() {
 
       {results && (
         <div className="dashboard-results" id="report-capture-area" style={{ backgroundColor: 'white', padding: '10px' }}>
-
-          <UrgentActions analysisData={results.integratedAnalysis} />
+          <UrgentActions analysisData={results.integratedAnalysis} brandName={brandName} />
 
           {/* Top Overview Cards */}
           <div className="grid grid-3" style={{ marginBottom: '2rem' }}>
