@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { appendDatasetLog } from '../utils/datasetLogger.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -30,6 +31,33 @@ router.get('/status', async (req, res) => {
     res.json({ count: lines.length, message: `Successfully loaded dataset status` });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * User manual feedback (Correction)
+ * Sent from Frontend FeedbackBox to improve ML model
+ */
+router.post('/feedback', async (req, res) => {
+  const { keyword, brandName, feedbackText } = req.body;
+  if (!feedbackText) {
+    return res.status(400).json({ error: 'Feedback text is required' });
+  }
+
+  try {
+    const sysPrompt = 'You are an elite B2B SEO/GEO Growth Hacker parsing data.';
+    const usrPrompt = `[Human Correction Feedback]\nKeyword: ${keyword || 'Unknown'}\nBrand: ${brandName || 'Unknown'}\nContext: The AI previously generated an insight for this data.\nHuman Expert instructs you to learn the following correction pattern or insight:\n${feedbackText}`;
+    const asstResponse = JSON.stringify({
+      analysis_insight: feedbackText,
+      urgent_actions: [
+        { title: "User Feedback Driven Action", description: feedbackText }
+      ]
+    });
+
+    await appendDatasetLog(sysPrompt, usrPrompt, asstResponse);
+    res.json({ message: 'Feedback logged successfully!' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

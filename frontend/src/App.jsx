@@ -7,6 +7,8 @@ import SearchDominanceQuadrant from './components/SearchDominanceQuadrant';
 import BrandMetricsTable from './components/BrandMetricsTable';
 import BenchmarkingReport from './components/BenchmarkingReport';
 import TopCompetitorHighlight from './components/TopCompetitorHighlight';
+import PaymentModal from './components/PaymentModal';
+import FeedbackBox from './components/FeedbackBox';
 import html2pdf from 'html2pdf.js';
 
 function App() {
@@ -20,6 +22,11 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  
+  const [showPayment, setShowPayment] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(
+    typeof window !== 'undefined' ? localStorage.getItem('geo_admin_unlocked') === 'true' : false
+  );
 
   const downloadPDF = () => {
     const element = document.getElementById('report-capture-area');
@@ -38,6 +45,17 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 무료 이용 제한 (Device 단일 5회)
+    if (!adminUnlocked) {
+      const usageCount = parseInt(localStorage.getItem('geo_usage_count') || '0', 10);
+      if (usageCount >= 5) {
+        setShowPayment(true);
+        return;
+      }
+      localStorage.setItem('geo_usage_count', (usageCount + 1).toString());
+    }
+
     setLoading(true);
     setResults(null);
     setError('');
@@ -143,10 +161,38 @@ function App() {
     }
   };
 
+  const handleSecretUnlock = () => {
+    localStorage.setItem('geo_admin_unlocked', 'true');
+    setAdminUnlocked(true);
+    alert('관리자 모드가 활성화되었습니다. 무제한 테스트가 가능합니다.');
+  };
+
   return (
     <div className="container">
-      <header style={{ marginBottom: '2rem', textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '0.5rem' }}>GEO Tool</h1>
+      {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
+      
+      <header style={{ marginBottom: '2rem', textAlign: 'center', position: 'relative' }}>
+        <div 
+          onDoubleClick={handleSecretUnlock}
+          style={{ 
+            position: 'absolute', 
+            top: '10px', 
+            right: '0px', 
+            backgroundColor: '#F59E0B', 
+            color: 'white', 
+            padding: '0.4rem 1rem', 
+            borderRadius: '20px', 
+            fontWeight: '800', 
+            letterSpacing: '1px', 
+            userSelect: 'none',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+            border: '2px solid #D97706'
+          }}
+          title={adminUnlocked ? "관리자 권한 활성화됨" : "더블 클릭 시 관리자 메뉴"}
+        >
+          {adminUnlocked ? 'BETA (Master)' : 'BETA'}
+        </div>
+        <h1 style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '0.5rem', paddingTop: '1.5rem' }}>GEO Tool</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Generative Engine Optimization 트렌드 및 가시성 분석 SaaS</p>
       </header>
 
@@ -299,6 +345,8 @@ function App() {
               </p>
             </div>
           </div>
+
+          <FeedbackBox brandName={brandName} keyword={keyword} />
 
           <div className="no-print" style={{ marginTop: '2rem', textAlign: 'center' }}>
             <button 
